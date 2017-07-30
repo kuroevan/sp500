@@ -1,0 +1,75 @@
+---
+title: "SP500"
+output: html_document
+---
+
+## Introduction
+
+For MSDS 6306 assignment 11 goal is to to modify SP500.R file so that we are able to download, analyse and plot data, followed by generating this markdown document and uploading work on github account. 
+
+## Get Libraries
+
+Get and load required libraries.
+
+```{r lib, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+# these libraries are needed to run this analysis
+#install.packages("tseries")
+library(tseries)
+```
+
+## Setup Environment
+
+Point to appropriate local directory for analysis.
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+# first set working directory
+setwd("/home/kuroevan/Desktop/R-Projects/lab11/sp500")
+getwd()
+```
+
+## Get Data
+
+Get Data required for analysis.
+
+```{r assingment, include=TRUE}
+SNPdata <- get.hist.quote('^gspc',quote = "Close")
+length(SNPdata)
+```
+
+## Analyze Data
+
+Analyze Data by first doing a log trasformation and then calculating volatility. Use 3 different decay factors.
+
+```{r analyze, include=TRUE}
+SNPret <- log(lag(SNPdata)) - log(SNPdata)
+length(SNPret)
+SNPvol <- sd(SNPret) * sqrt(250) * 100
+SNPvol
+Vol <- function(d, logrets) {
+  var = 0
+  lam = 0
+  varlist <- c()
+  for (r in logrets) {
+    lam = lam*(1-1/d) + 1
+    var = (1-1/lam)*var + (1/lam)*r^2
+    varlist <- c(varlist,var)
+  }
+  sqrt(varlist)
+}
+volest <- Vol(10,SNPret)
+volest2 <- Vol(30,SNPret)
+volest3 <- Vol(100,SNPret)
+```
+
+## Plot Data
+
+Plot results overlaying volatility curves on data.
+
+```{r plot, echo=TRUE}
+plot(volest, type = "l")
+lines(volest2,type = "l", col="red")
+lines(volest3,type = "l", col="blue")
+```
+
